@@ -285,8 +285,12 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
             return redirect('index')  # Przekierowanie po zalogowaniu
+        else:
+            messages.error(request, "Błędna nazwa użytkownika lub hasło")  # Komunikat o błędzie
+
     else:
         form = AuthenticationForm()
+
     return render(request, 'login.html', {'form': form})
 
 def register_view(request):
