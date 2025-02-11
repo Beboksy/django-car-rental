@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-xz+eqr17a+ik4w&cbyq5z@^q&(uj_ml6)pcb)99yl@lg!l204$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["car-rental-jsr4.onrender.com", "127.0.0.1", "localhost"]
 
 
 # Application definition
@@ -138,6 +138,8 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'bartoszkapustka15@gmail.com'
 EMAIL_HOST_PASSWORD = 'eygn pynd joln orrr'
 DEFAULT_FROM_EMAIL = "no-reply@yourdomain.com"
+
+
 
 
 
