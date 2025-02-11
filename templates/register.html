@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pl">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rejestracja</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .register-box {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            width: 360px;
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .register-box h3 {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333333;
+            margin-bottom: 20px;
+        }
+
+        .register-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 5px;
+            font-size: 14px;
+            box-shadow: none;
+        }
+
+        .btn-success {
+            background-color: #29ca8e;
+            border: none;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: none;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-outline-success {
+            background-color: #ffffff;
+            border: 1px solid #29ca8e;
+            color: #29ca8e;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: none;
+        }
+
+        .btn-outline-success:hover {
+            background-color: #29ca8e;
+            color: #ffffff;
+        }
+
+        .register-box p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666666;
+        }
+
+        .register-box a {
+            color: #29ca8e;
+            text-decoration: none;
+        }
+
+        .register-box a:hover {
+            text-decoration: underline;
+        }
+
+        .validation-list {
+            text-align: left;
+            font-size: 12px;
+            margin-bottom: 10px;
+            padding-left: 15px;
+        }
+
+        .validation-list li {
+            list-style: none;
+            margin-bottom: 5px;
+        }
+
+        .valid {
+            color: green;
+        }
+
+        .invalid {
+            color: red;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 12px;
+            text-align: left;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .username-error {
+            color: red;
+            font-size: 12px;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-box">
+        <h3>Rejestracja</h3>
+        <form method="POST" id="registrationForm">
+            {% csrf_token %}
+            
+            <input type="text" name="username" id="username" placeholder="Nazwa użytkownika" required>
+            <div id="usernameValidationMessage" class="username-error"></div>
+            <input type="text" name="first_name" placeholder="Imię" required>
+            <input type="text" name="last_name" placeholder="Nazwisko" required>
+            <input type="email" name="email" placeholder="Adres email" required>
+            <input type="text" name="phone_number" id="phone_number" placeholder="Numer telefonu" required>
+            <div id="phoneValidationMessage" class="error-message"></div>
+            <input type="password" id="password1" name="password1" placeholder="Hasło" required>
+            <ul id="password1Validation" class="validation-list">
+                <li id="length" class="invalid">Hasło musi mieć co najmniej 8 znaków.</li>
+                <li id="uppercase" class="invalid">Hasło musi zawierać co najmniej 1 dużą literę.</li>
+                <li id="number" class="invalid">Hasło musi zawierać co najmniej 1 cyfrę.</li>
+                <li id="special" class="invalid">Hasło musi zawierać co najmniej 1 znak specjalny.</li>
+            </ul>
+            <input type="password" id="password2" name="password2" placeholder="Powtórz hasło" required>
+            <ul id="password2Validation" class="validation-list">
+                <li id="match" class="invalid">Hasła muszą być identyczne.</li>
+            </ul>
+            <div id="error-message" class="error-message" style="display: none;">Proszę poprawić błędy w formularzu przed wysłaniem.</div>
+            <button type="submit" class="btn-success">Zarejestruj się</button>
+        </form>
+        <button class="btn-outline-success" onclick="window.location.href='{% url 'index' %}'">Cofnij</button>
+    </div>
+
+    <script>
+        const usernameInput = document.getElementById("username");
+        const usernameValidationMessage = document.getElementById("usernameValidationMessage");
+        const phoneInput = document.getElementById("phone_number");
+        const phoneValidationMessage = document.getElementById("phoneValidationMessage");
+        const password1 = document.getElementById("password1");
+        const password2 = document.getElementById("password2");
+        const password1Validation = {
+            length: document.getElementById("length"),
+            uppercase: document.getElementById("uppercase"),
+            number: document.getElementById("number"),
+            special: document.getElementById("special")
+        };
+        const password2Validation = {
+            match: document.getElementById("match")
+        };
+        const errorMessage = document.getElementById("error-message");
+    
+        /**
+         * Walidacja pierwszego hasła (min. 8 znaków, 1 duża litera, 1 cyfra, 1 znak specjalny)
+         */
+        const validatePassword1 = () => {
+            const value = password1.value;
+            password1Validation.length.classList.toggle("valid", value.length >= 8);
+            password1Validation.length.classList.toggle("invalid", value.length < 8);
+            password1Validation.uppercase.classList.toggle("valid", /[A-Z]/.test(value));
+            password1Validation.uppercase.classList.toggle("invalid", !/[A-Z]/.test(value));
+            password1Validation.number.classList.toggle("valid", /[0-9]/.test(value));
+            password1Validation.number.classList.toggle("invalid", !/[0-9]/.test(value));
+            password1Validation.special.classList.toggle("valid", /[!@#$%^&*]/.test(value));
+            password1Validation.special.classList.toggle("invalid", !/[!@#$%^&*]/.test(value));
+        };
+    
+        /**
+         * Walidacja powtórzonego hasła (musi być identyczne)
+         */
+        const validatePassword2 = () => {
+            const match = password1.value === password2.value && password2.value !== "";
+            password2Validation.match.classList.toggle("valid", match);
+            password2Validation.match.classList.toggle("invalid", !match);
+        };
+    
+        /**
+         * Walidacja nazwy użytkownika (sprawdza, czy jest już zajęta)
+         */
+        const validateUsername = async () => {
+            const username = usernameInput.value.trim();
+    
+            if (username.length === 0) {
+                usernameValidationMessage.textContent = "";
+                return;
+            }
+    
+            try {
+                const response = await fetch(`/check-username?username=${username}`);
+                const data = await response.json();
+                usernameValidationMessage.textContent = data.exists ? "Nazwa użytkownika jest już zajęta." : "";
+            } catch (error) {
+                console.error("Błąd sprawdzania nazwy użytkownika:", error);
+            }
+        };
+    
+        /**
+         * Walidacja numeru telefonu (może zawierać tylko cyfry i opcjonalnie + na początku)
+         */
+        const validatePhoneNumber = () => {
+            const phoneValue = phoneInput.value.trim();
+            const phoneRegex = /^\+?\d{9,15}$/; // Akceptuje cyfry oraz opcjonalnie + na początku
+    
+            if (phoneRegex.test(phoneValue)) {
+                phoneValidationMessage.textContent = "";
+                return true;
+            } else {
+                phoneValidationMessage.textContent = "Numer telefonu powinien zawierać wyłącznie od 9 do 15 cyfr i może zaczynać się od '+'.";
+                return false;
+            }
+        };
+    
+        /**
+         * Walidacja całego formularza przed wysłaniem
+         */
+        const validateForm = (e) => {
+            validatePassword1();
+            validatePassword2();
+            validateUsername();
+            const phoneValid = validatePhoneNumber();
+    
+            const isValid = Object.values(password1Validation).every(el => el.classList.contains("valid")) &&
+                            password2Validation.match.classList.contains("valid") &&
+                            usernameValidationMessage.textContent === "" &&
+                            phoneValid;
+    
+            if (!isValid) {
+                e.preventDefault();
+                errorMessage.style.display = "block";
+            } else {
+                errorMessage.style.display = "none";
+            }
+        };
+    
+        // Obsługa zdarzeń dla dynamicznej walidacji
+        password1.addEventListener("input", validatePassword1);
+        password2.addEventListener("input", validatePassword2);
+        usernameInput.addEventListener("input", validateUsername);
+        phoneInput.addEventListener("input", validatePhoneNumber);
+        document.getElementById("registrationForm").addEventListener("submit", validateForm);
+    </script>
+</body>
+</html>

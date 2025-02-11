@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <title>Fleet - Car Rental Website</title>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/owl.carousel.css' %}">
+    <link rel="stylesheet" href="{% static 'css/owl.theme.default.min.css' %}">
+
+    <!-- MAIN CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body id="top" data-spy="scroll" data-target=".navbar-collapse" data-offset="50">
+
+    <!-- PRE LOADER -->
+    <section class="preloader">
+        <div class="spinner">
+            <span class="spinner-rotate"></span>
+        </div>
+    </section>
+
+    <!-- MENU -->
+    <section class="navbar custom-navbar navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon icon-bar"></span>
+                    <span class="icon icon-bar"></span>
+                    <span class="icon icon-bar"></span>
+                </button>
+                <a href="{% url 'index' %}" class="navbar-brand">Car Rental Website</a>
+            </div>
+
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-nav-first">
+                    <li><a href="{% url 'index' %}">Home</a></li>
+                    <li class="active"><a href="{% url 'fleet' %}">Fleet</a></li>
+                    <li><a href="{% url 'offers' %}">Promotions</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">About <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'about-us' %}">About Us</a></li>
+                            <li><a href="{% url 'terms' %}">Terms</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="{% url 'contact' %}">Contact Us</a></li>
+                    {% if user.is_superuser %}
+                        <li><a href="{% url 'reservations' %}">Reservations</a></li>
+                    {% endif %}
+                </ul>
+
+                <ul class="nav navbar-nav navbar-right">
+                    {% if user.is_authenticated %}
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                {{ user.username }} <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{% url 'profile' %}">Dane osobowe</a></li>
+                                <li><a href="{% url 'order_history' %}">Historia zamówień</a></li>
+                                <li>
+                                    <a href="#" onclick="document.getElementById('logout-form').submit();">Wyloguj</a>
+                                </li>
+                            </ul>
+                            <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+                                {% csrf_token %}
+                            </form>
+                        </li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}" class="nav-link custom-login-btn">Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fleet Section -->
+    <section>
+        <div class="container">
+            <div class="text-center">
+                <h1>Nasza flota</h1>
+                <p class="lead">Wybierz idealny samochód do swoich potrzeb</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-background">
+        <div class="container">
+            <div class="row">
+                {% for samochod in samochody %}
+                    <div class="col-md-4 col-sm-6">
+                        <div class="courses-thumb courses-thumb-secondary">
+                            <div class="courses-top">
+                                <div class="courses-image">
+                                    <img src="{{ samochod.zdjecie_samochodu.url }}" class="img-responsive" alt="{{ samochod.marka }} {{ samochod.model }}">
+                                </div>
+                                <div class="courses-date">
+                                    <span title="Liczba miejsc">
+                                        <i class="fa fa-user"></i> {{ samochod.ilosc_miejsc }}
+                                    </span>
+                                    <span title="Pojemność bagażnika">
+                                        <i class="fa fa-briefcase"></i> {{ samochod.pojemnosc_bagaznika }} L
+                                    </span>
+                                    <span title="Liczba drzwi">
+                                        <i class="fa fa-sign-out"></i> {{ samochod.liczba_drzwi }}
+                                    </span>
+                                    <span title="Skrzynia biegów">
+                                        <i class="fa fa-cog"></i> {{ samochod.get_skrzynia_display }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="courses-detail">
+                                <h3>{{ samochod.marka }} {{ samochod.model }}</h3>
+                                {% if samochod.obnizona_cena %}
+                                    <p class="lead">
+                                        <small>od</small> 
+                                        <strong style="color: red;">{{ samochod.obnizona_cena }} zł</strong>
+                                        <small><del>{{ samochod.cena }} zł</del></small>
+                                    </p>
+                                {% else %}
+                                    <p class="lead">
+                                        <small>od</small>
+                                        <strong>{{ samochod.cena }} zł</strong>
+                                    </p>
+                                {% endif %}
+                                <!--<p>{{ samochod.opis }}</p>-->
+                                <p>
+                                    <span title="Rodzaj silnika">
+                                        <i class="fa fa-tachometer"></i> {{ samochod.rodzaj_silnika }}
+                                    </span>
+                                </p>
+                                <p>
+                                    <span title="Pojemność silnika">
+                                        <i class="fa fa-cogs"></i> {{ samochod.pojemnosc_silnika }} L
+                                    </span>
+                                </p>
+                                <p>
+                                    <span title="Moc silnika">
+                                        <i class="fa fa-bolt"></i> {{ samochod.moc }} KM
+                                    </span>
+                                </p>
+                                <p>
+                                    <span title="Przebieg">
+                                        <i class="fa fa-road"></i> {{ samochod.przebieg }} km
+                                    </span>
+                                </p>
+                                <p>
+                                    <span title="Rocznik">
+                                        <i class="fa fa-calendar"></i> {{ samochod.rocznik }}
+                                    </span>
+                                </p>
+                            </div>
+
+                            <div class="courses-info">
+                                <form method="POST" action="{% url 'book_car' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="numer_rejestracyjny" value="{{ samochod.numer_rejestracyjny }}">
+                                    <button type="submit" class="section-btn btn btn-primary btn-block">Zarezerwuj teraz</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-center">Brak dostępnych samochodów w bazie danych.</p>
+                {% endfor %}
+            </div><!-- row -->
+        </div><!-- container -->
+    </section>
+
+    <!-- FOOTER -->
+    {% include "partials/footer.html" %}
+
+    <!-- SCRIPTS -->
+    <script src="{% static 'js/jquery.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/owl.carousel.min.js' %}"></script>
+    <script src="{% static 'js/smoothscroll.js' %}"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
+
+</body>
+</html>

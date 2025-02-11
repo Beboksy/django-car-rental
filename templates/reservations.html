@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <title>Rezerwacje</title>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/owl.carousel.css' %}">
+    <link rel="stylesheet" href="{% static 'css/owl.theme.default.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body id="top" data-spy="scroll" data-target=".navbar-collapse" data-offset="50">
+
+    <!-- MENU -->
+    <section class="navbar custom-navbar navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon icon-bar"></span>
+                    <span class="icon icon-bar"></span>
+                    <span class="icon icon-bar"></span>
+                </button>
+                <a href="{% url 'index' %}" class="navbar-brand">Car Rental Website</a>
+            </div>
+
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-nav-first">
+                    <li><a href="{% url 'index' %}">Home</a></li>
+                    <li><a href="{% url 'fleet' %}">Fleet</a></li>
+                    <li><a href="{% url 'offers' %}">Promotions</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">About <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'about-us' %}">About Us</a></li>
+                            <li><a href="{% url 'terms' %}">Terms</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="{% url 'contact' %}">Contact Us</a></li>
+                    {% if user.is_superuser %}
+                        <li class="active"><a href="{% url 'reservations' %}">Reservations</a></li>
+                    {% endif %}
+                </ul>
+
+                <ul class="nav navbar-nav navbar-right">
+                    {% if user.is_authenticated %}
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ user.username }} <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{% url 'profile' %}">Dane osobowe</a></li>
+                                <li><a href="{% url 'order_history' %}">Historia zamówień</a></li>
+                                <li><a href="#" onclick="document.getElementById('logout-form').submit();">Wyloguj</a></li>
+                            </ul>
+                            <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+                                {% csrf_token %}
+                            </form>
+                        </li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}" class="nav-link custom-login-btn">Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- RESERVATIONS SECTION -->
+    <section class="section-background">
+        <div class="container">
+            <div class="text-center">
+                <h1>Lista Rezerwacji</h1>
+                <p class="lead">Wybierz zakres dat, aby zobaczyć rezerwacje</p>
+            </div>
+            <form method="get" action="{% url 'reservations' %}">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="start_date">Data początkowa:</label>
+                        <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request.GET.start_date }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="end_date">Data końcowa:</label>
+                        <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request.GET.end_date }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="car">Samochód:</label>
+                        <select name="car" id="car" class="form-control">
+                            <option value="">Wszystkie</option>
+                            {% for car in available_cars %}
+                                <option value="{{ car.0 }}" {% if car.0 == request.GET.car %}selected{% endif %}>
+                                    {{ car.1 }} {{ car.2 }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="user">Użytkownik:</label>
+                        <select name="user" id="user" class="form-control">
+                            <option value="">Wszyscy</option>
+                            {% for user in available_users %}
+                                <option value="{{ user }}" {% if user == request.GET.user %}selected{% endif %}>
+                                    {{ user }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status">Status:</label>
+                        <select name="status" id="status" class="form-control">
+                            <option value="">Wszystkie</option>
+                            <option value="active" {% if request.GET.status == "active" %}selected{% endif %}>Aktywna</option>
+                            <option value="not_active" {% if request.GET.status == "not_active" %}selected{% endif %}>Nie aktywna</option>
+                            <option value="technical_break" {% if request.GET.status == "technical_break" %}selected{% endif %}>Przerwa techniczna</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-success" style="margin-top: 25px;">Filtruj</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="row" style="margin-top: 30px;">
+                <div class="col-md-12">
+                    <h3>Rezerwacje</h3>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Samochód</th>
+                                <th>Użytkownik</th>
+                                <th>Od kiedy</th>
+                                <th>Do kiedy</th>
+                                <th>Koszt</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reservation in reservations %}
+                                <tr>
+                                    <td>{{ reservation.id_zamowienia }}</td>
+                                    <td>{{ reservation.samochod.marka }} {{ reservation.samochod.model }}</td>
+                                    <td>{{ reservation.uzytkownik.username }}</td>
+                                    <td>{{ reservation.od_kiedy }}</td>
+                                    <td>{{ reservation.do_kiedy }}</td>
+                                    <td>{{ reservation.laczny_koszt }} zł</td>
+                                    <td>
+                                        {% if reservation.uzytkownik.username == "admin" %}
+                                            <span class="label label-warning">Przerwa techniczna</span>
+                                        {% elif reservation.rezerwacja_aktywna %}
+                                            <span class="label label-success">Aktywna</span>
+                                        {% else %}
+                                            <span class="label label-default">Nie aktywna</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">Brak rezerwacji w podanym okresie</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <h4>Łączny zysk: {{ total_earnings }} zł</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    {% include "partials/footer.html" %}
+    
+    <!-- SCRIPTS -->
+    <script src="{% static 'js/jquery.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+</body>
+</html>

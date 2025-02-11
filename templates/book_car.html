@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <title>Rezerwacja samochodu</title>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/owl.carousel.css' %}">
+    <link rel="stylesheet" href="{% static 'css/owl.theme.default.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+</head>
+<style>
+    .section-background {
+        padding: 50px 0;
+        background-color: #f8f9fa;
+    }
+
+    h2 {
+        margin-bottom: 20px;
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .form-horizontal .form-group {
+        margin-bottom: 15px;
+    }
+
+    .btn-success {
+        background-color: #29ca8e;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+
+    /* Styl dla zajętych dat w kalendarzu */
+
+    .flatpickr-day.disabled,
+    .flatpickr-day.disabled:hover {
+        background-color: #f8d7da !important; /* Jasnoczerwony kolor tła */
+        color: #721c24 !important; /* Czerwony kolor tekstu */
+        cursor: not-allowed;
+        border-radius: 50%; /* Jeśli chcesz, aby data była bardziej widoczna */
+    }
+
+    .unavailable {
+        background-color: #f8d7da !important; /* Jasnoczerwony kolor tła */
+        color: #721c24 !important; /* Czerwony kolor tekstu */
+        cursor: not-allowed !important;
+        pointer-events: none !important; /* Uniemożliwia kliknięcie */
+    }
+
+    .flatpickr-day.startRange,
+    .flatpickr-day.endRange {
+        background-color: #29ca8e !important; /* Zielony początek i koniec zakresu */
+        color: white !important;
+    }
+
+    .flatpickr-day.inRange {
+        background-color: #a4e7d1 !important; /* Jasnozielony dla dat w środku zakresu */
+        color: white !important;
+    }
+</style>
+<body id="top" data-spy="scroll" data-target=".navbar-collapse" data-offset="50">
+
+    <!-- PRE LOADER -->
+    <section class="preloader">
+        <div class="spinner">
+            <span class="spinner-rotate"></span>
+        </div>
+    </section>
+
+    <!-- NAVIGATION BAR -->
+    <section class="navbar custom-navbar navbar-fixed-top" role="navigation">
+        <div class="container">
+
+            <div class="navbar-header">
+                <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon icon-bar"></span>
+                    <span class="icon icon-bar"></span>
+                    <span class="icon icon-bar"></span>
+                </button>
+
+                <!-- LOGO TEXT -->
+                <a href="{% url 'index' %}" class="navbar-brand">Car Rental Website</a>
+            </div>
+
+            <!-- MENU LINKS -->
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-nav-first">
+                    <li><a href="{% url 'index' %}">Home</a></li>
+                    <li><a href="{% url 'fleet' %}">Fleet</a></li>
+                    <li><a href="{% url 'offers' %}">Promotions</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                            About <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'about-us' %}">About Us</a></li>
+                            <li><a href="{% url 'terms' %}">Terms</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="{% url 'contact' %}">Contact Us</a></li>
+                    {% if user.is_superuser %}
+                        <li><a href="{% url 'reservations' %}">Reservations</a></li>
+                    {% endif %}
+                </ul>
+
+                <ul class="nav navbar-nav navbar-right">
+                    {% if user.is_authenticated %}
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                {{ user.username }} <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{% url 'profile' %}" class="dropdown-item">Dane osobowe</a></li>
+                                <li><a href="{% url 'order_history' %}" class="dropdown-item">Historia zamówień</a></li>
+                                <li>
+                                    <a href="#" class="dropdown-item" onclick="document.getElementById('logout-form').submit();">Wyloguj</a>
+                                </li>
+                            </ul>
+                            <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+                                {% csrf_token %}
+                            </form>
+                        </li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}" class="nav-link custom-login-btn">Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- BOOKING SECTION -->
+    <section class="section-background">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3">
+                    <h2 class="text-center">Rezerwacja samochodu</h2>
+                    <form method="POST" action="{% url 'book_car' %}" class="form-horizontal">
+                        {% csrf_token %}
+                        <input type="hidden" name="numer_rejestracyjny" value="{{ samochod.numer_rejestracyjny }}">
+                        
+                        <!-- Dane użytkownika -->
+                        <div class="form-group">
+                            <label class="control-label col-sm-4">Nazwa użytkownika:</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-sm-4">Imię i nazwisko:</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{ user.first_name }} {{ user.last_name }}" readonly>
+                            </div>
+                        </div>
+
+                        <!-- Dane samochodu -->
+                        <div class="form-group">
+                            <label class="control-label col-sm-4">Samochód:</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" value="{{ samochod.marka }} {{ samochod.model }}" readonly>
+                            </div>
+                        </div>
+
+                        <!-- Data rezerwacji -->
+                        <div class="form-group">
+                            <label for="od_kiedy" class="control-label col-sm-4">Od kiedy:</label>
+                            <div class="col-sm-8">
+                                <input type="text" id="od_kiedy" name="od_kiedy" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="do_kiedy" class="control-label col-sm-4">Do kiedy:</label>
+                            <div class="col-sm-8">
+                                <input type="text" id="do_kiedy" name="do_kiedy" class="form-control" readonly>
+                            </div>
+                        </div>
+                        
+                        <!-- Łączny koszt -->
+                        <div class="form-group">
+                            <label class="control-label col-sm-4">Łączny koszt:</label>
+                            <div class="col-sm-8">
+                                <input type="text" id="total_cost" name="laczny_koszt" class="form-control" value="0 zł" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="col-sm-offset-4 col-sm-8">
+                                <button type="submit" class="btn btn-success">Zarezerwuj</button>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    
+    <!-- FOOTER -->
+    {% include "partials/footer.html" %}
+
+    <!-- SCRIPTS -->
+    <script src="{% static 'js/jquery.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/owl.carousel.min.js' %}"></script>
+    <script src="{% static 'js/smoothscroll.js' %}"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pl.js"></script>
+    
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Pobierz zajęte daty z Django
+    const zajeteDaty = {{ zajete_daty|safe }}; 
+
+    // Pobierz referencję do pól formularza
+    const odKiedyInput = document.getElementById("od_kiedy");
+    const doKiedyInput = document.getElementById("do_kiedy");
+    const totalCostInput = document.getElementById("total_cost");
+
+    // Sprawdzenie, czy Flatpickr jest dostępny
+    if (typeof flatpickr === "undefined") {
+        console.error("Flatpickr nie został załadowany!");
+        return;
+    }
+
+    // Inicjalizacja Flatpickr
+    const picker = flatpickr(odKiedyInput, {
+        mode: "range",
+        dateFormat: "Y-m-d",
+        locale: "pl",
+        disable: zajeteDaty.map(date => new Date(date)), // Blokowanie zajętych dat
+        minDate: "today",
+        onChange: function (selectedDates, dateStr, instance) {
+            if (selectedDates.length === 2) {
+                odKiedyInput.value = instance.formatDate(selectedDates[0], "Y-m-d");
+                doKiedyInput.value = instance.formatDate(selectedDates[1], "Y-m-d");
+            } else if (selectedDates.length === 1) {
+                odKiedyInput.value = instance.formatDate(selectedDates[0], "Y-m-d");
+                doKiedyInput.value = "";
+            }
+
+            calculateTotalCost();
+            highlightUnavailableDates(instance);
+        },
+        onReady: function (selectedDates, dateStr, instance) {
+            highlightUnavailableDates(instance);
+        },
+        onMonthChange: function (selectedDates, dateStr, instance) {
+            highlightUnavailableDates(instance);
+        },
+    });
+
+    // Funkcja do podświetlania zajętych dat na czerwono
+    function highlightUnavailableDates(instance) {
+        setTimeout(() => {
+            zajeteDaty.forEach(function (dateString) {
+                const dateObj = new Date(dateString);
+                const formatted = instance.formatDate(dateObj, "F j, Y");
+                const dateElement = instance.calendarContainer.querySelector(`[aria-label="${formatted}"]`);
+                if (dateElement) {
+                    dateElement.classList.add("unavailable");
+                }
+            });
+        }, 10);
+    }
+
+    // Funkcja obliczająca koszt rezerwacji
+    function calculateTotalCost() {
+        const odKiedyValue = odKiedyInput.value;
+        const doKiedyValue = doKiedyInput.value;
+
+        if (odKiedyValue && doKiedyValue) {
+            const odKiedyDate = new Date(odKiedyValue);
+            const doKiedyDate = new Date(doKiedyValue);
+            if (doKiedyDate >= odKiedyDate) {
+                const days = Math.ceil((doKiedyDate - odKiedyDate) / (1000 * 60 * 60 * 24)) + 1;
+                const carPricePerDay = parseFloat("{{ samochod.obnizona_cena|default:samochod.cena|floatformat:2 }}");
+                const totalCost = days * carPricePerDay;
+                totalCostInput.value = totalCost + " zł";
+            } 
+            else {
+                totalCostInput.value = "0 zł";
+            }
+        }
+        else {
+            totalCostInput.value = "0 zł";
+        }
+    }
+});
+
+</script>
+    
+</body>
+</html>

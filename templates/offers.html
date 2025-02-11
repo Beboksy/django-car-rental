@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <title>Promocje - Car Rental</title>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/owl.carousel.css' %}">
+    <link rel="stylesheet" href="{% static 'css/owl.theme.default.min.css' %}">
+
+    <!-- MAIN CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body id="top" data-spy="scroll" data-target=".navbar-collapse" data-offset="50">
+
+    <!-- PRE LOADER -->
+    <section class="preloader">
+        <div class="spinner">
+            <span class="spinner-rotate"></span>
+        </div>
+    </section>
+
+    <!-- MENU -->
+    <section class="navbar custom-navbar navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon icon-bar"></span>
+                    <span class="icon icon-bar"></span>
+                    <span class="icon icon-bar"></span>
+                </button>
+                <a href="{% url 'index' %}" class="navbar-brand">Car Rental Website</a>
+            </div>
+
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-nav-first">
+                    <li><a href="{% url 'index' %}">Home</a></li>
+                    <li><a href="{% url 'fleet' %}">Fleet</a></li>
+                    <li class="active"><a href="{% url 'offers' %}">Promotions</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">About <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'about-us' %}">About Us</a></li>
+                            <li><a href="{% url 'terms' %}">Terms</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="{% url 'contact' %}">Contact Us</a></li>
+                    {% if user.is_superuser %}
+                        <li><a href="{% url 'reservations' %}">Reservations</a></li>
+                    {% endif %}
+                </ul>
+
+                <ul class="nav navbar-nav navbar-right">
+                    {% if user.is_authenticated %}
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                {{ user.username }} <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{% url 'profile' %}">Dane osobowe</a></li>
+                                <li><a href="{% url 'order_history' %}">Historia zamówień</a></li>
+                                <li>
+                                    <a href="#" onclick="document.getElementById('logout-form').submit();">Wyloguj</a>
+                                </li>
+                            </ul>
+                            <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+                                {% csrf_token %}
+                            </form>
+                        </li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}" class="nav-link custom-login-btn">Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <div class="text-center">
+                <h1>Aktualne Promocje</h1>
+                <br>
+                <p class="lead">Sprawdź nasze aktualne oferty i skorzystaj z wyjątkowych rabatów!</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-background">
+        <div class="container">
+            <div class="row">
+                {% for promocja in promocje %}
+                    <div class="col-md-4 col-sm-6">
+                        <div class="courses-thumb courses-thumb-secondary">
+                            <div class="courses-top">
+                                <div class="courses-image">
+                                    <img src="{{ promocja.zdjecie.url }}" class="img-responsive" alt="{{ promocja.nazwa }}">
+                                </div>
+                            </div>
+                            <div class="courses-detail">
+                                <h3><a href="{% url 'fleet' %}">{{ promocja.nazwa }}</a></h3>
+                                <p class="lead">
+                                    <small>Aż</small>
+                                    <strong style="color: red;">{{ promocja.procent_znizki|floatformat:0 }}%</strong>
+                                    <small>Rabatu</small>
+                                </p>
+                                <p>{{ promocja.opis }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-center">Brak aktualnych promocji.</p>
+                {% endfor %}
+            </div><!-- row -->
+        </div><!-- container -->
+    </section>
+
+    <!-- FOOTER -->
+    {% include "partials/footer.html" %}
+
+    <!-- SCRIPTS -->
+    <script src="{% static 'js/jquery.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/owl.carousel.min.js' %}"></script>
+    <script src="{% static 'js/smoothscroll.js' %}"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
+
+</body>
+</html>
