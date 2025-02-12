@@ -247,6 +247,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     // Pobierz zajęte daty z Django
     const zajeteDaty = {{ zajete_daty|safe }}; 
+    const dzisiaj = new Date();
 
     // Pobierz referencję do pól formularza
     const odKiedyInput = document.getElementById("od_kiedy");
@@ -294,7 +295,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 const formatted = instance.formatDate(dateObj, "F j, Y");
                 const dateElement = instance.calendarContainer.querySelector(`[aria-label="${formatted}"]`);
                 if (dateElement) {
-                    dateElement.classList.add("unavailable");
+                    if (dateObj < dzisiaj) {
+                        // Jeżeli data jest w przeszłości -> wyszarzona
+                        dateElement.classList.add("flatpickr-disabled");
+                    } else {
+                        // Jeżeli data jest w przyszłości -> czerwona
+                        dateElement.classList.add("unavailable");
+                    }
                 }
             });
         }, 10);

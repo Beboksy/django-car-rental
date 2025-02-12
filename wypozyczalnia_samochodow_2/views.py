@@ -365,7 +365,7 @@ class CustomUserCreationForm(UserCreationForm):
 def order_history_view(request):
     aktualizuj_statusy()
     user = request.user
-    order_history = Zamowienie.objects.filter(uzytkownik=user).order_by('-od_kiedy')
+    order_history = Zamowienie.objects.filter(uzytkownik=user).order_by('od_kiedy')
     return render(request, 'order_history.html', {'order_history': order_history})
 
 
