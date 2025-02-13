@@ -161,7 +161,11 @@
                                     <td>{{ reservation.uzytkownik.username }}</td>
                                     <td>{{ reservation.od_kiedy }}</td>
                                     <td>{{ reservation.do_kiedy }}</td>
+                                    {% if reservation.uzytkownik.username == "admin" %}
+                                        <td></td>
+                                    {% else %}
                                     <td>{{ reservation.laczny_koszt }} zł</td>
+                                    {% endif %}
                                     <td>
                                         {% if reservation.uzytkownik.username == "admin" %}
                                             <span class="label label-warning">Przerwa techniczna</span>
