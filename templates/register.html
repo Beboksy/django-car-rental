@@ -179,26 +179,55 @@
     </div>
 
     <script>
+        const firstNameInput = document.querySelector("input[name='first_name']");
+        const lastNameInput = document.querySelector("input[name='last_name']");
         const usernameInput = document.getElementById("username");
         const usernameValidationMessage = document.getElementById("usernameValidationMessage");
         const phoneInput = document.getElementById("phone_number");
         const phoneValidationMessage = document.getElementById("phoneValidationMessage");
         const password1 = document.getElementById("password1");
         const password2 = document.getElementById("password2");
+        
         const password1Validation = {
             length: document.getElementById("length"),
             uppercase: document.getElementById("uppercase"),
             number: document.getElementById("number"),
             special: document.getElementById("special")
         };
+        
         const password2Validation = {
             match: document.getElementById("match")
         };
+        
         const errorMessage = document.getElementById("error-message");
     
-        /**
-         * Walidacja pierwszego hasła (min. 8 znaków, 1 duża litera, 1 cyfra, 1 znak specjalny)
-         */
+        // Walidacja imienia i nazwiska (tylko litery, co najmniej 2 znaki)
+        const validateText = (input) => {
+            const value = input.value.trim();
+            const textRegex = /^[A-Za-zÀ-ÿ\s'-]{2,}$/;
+    
+            if (!textRegex.test(value)) {
+                input.setCustomValidity("To pole może zawierać tylko litery i musi mieć co najmniej 2 znaki.");
+            } else {
+                input.setCustomValidity("");
+            }
+        };
+    
+        // Walidacja numeru telefonu (tylko cyfry + opcjonalny '+')
+        const validatePhoneNumber = () => {
+            const phoneValue = phoneInput.value.trim();
+            const phoneRegex = /^\+?\d{9,15}$/;
+    
+            if (phoneRegex.test(phoneValue)) {
+                phoneValidationMessage.textContent = "";
+                return true;
+            } else {
+                phoneValidationMessage.textContent = "Numer telefonu powinien zawierać wyłącznie od 9 do 15 cyfr i może zaczynać się od '+'.";
+                return false;
+            }
+        };
+    
+        // Walidacja pierwszego hasła (min. 8 znaków, 1 duża litera, 1 cyfra, 1 znak specjalny)
         const validatePassword1 = () => {
             const value = password1.value;
             password1Validation.length.classList.toggle("valid", value.length >= 8);
@@ -211,60 +240,27 @@
             password1Validation.special.classList.toggle("invalid", !/[!@#$%^&*]/.test(value));
         };
     
-        /**
-         * Walidacja powtórzonego hasła (musi być identyczne)
-         */
+        // Walidacja powtórzonego hasła (musi być identyczne)
         const validatePassword2 = () => {
             const match = password1.value === password2.value && password2.value !== "";
             password2Validation.match.classList.toggle("valid", match);
             password2Validation.match.classList.toggle("invalid", !match);
         };
     
-        /**
-         * Walidacja nazwy użytkownika (sprawdza, czy jest już zajęta)
-         */
-        const validateUsername = async () => {
-            const username = usernameInput.value.trim();
+        // Obsługa zdarzeń dla dynamicznej walidacji
+        firstNameInput.addEventListener("input", () => validateText(firstNameInput));
+        lastNameInput.addEventListener("input", () => validateText(lastNameInput));
+        phoneInput.addEventListener("input", validatePhoneNumber);
+        password1.addEventListener("input", validatePassword1);
+        password2.addEventListener("input", validatePassword2);
     
-            if (username.length === 0) {
-                usernameValidationMessage.textContent = "";
-                return;
-            }
-    
-            try {
-                const response = await fetch(`/check-username?username=${username}`);
-                const data = await response.json();
-                usernameValidationMessage.textContent = data.exists ? "Nazwa użytkownika jest już zajęta." : "";
-            } catch (error) {
-                console.error("Błąd sprawdzania nazwy użytkownika:", error);
-            }
-        };
-    
-        /**
-         * Walidacja numeru telefonu (może zawierać tylko cyfry i opcjonalnie + na początku)
-         */
-        const validatePhoneNumber = () => {
-            const phoneValue = phoneInput.value.trim();
-            const phoneRegex = /^\+?\d{9,15}$/; // Akceptuje cyfry oraz opcjonalnie + na początku
-    
-            if (phoneRegex.test(phoneValue)) {
-                phoneValidationMessage.textContent = "";
-                return true;
-            } else {
-                phoneValidationMessage.textContent = "Numer telefonu powinien zawierać wyłącznie od 9 do 15 cyfr i może zaczynać się od '+'.";
-                return false;
-            }
-        };
-    
-        /**
-         * Walidacja całego formularza przed wysłaniem
-         */
-        const validateForm = (e) => {
+        document.getElementById("registrationForm").addEventListener("submit", (e) => {
             validatePassword1();
             validatePassword2();
-            validateUsername();
+            validateText(firstNameInput);
+            validateText(lastNameInput);
             const phoneValid = validatePhoneNumber();
-    
+            
             const isValid = Object.values(password1Validation).every(el => el.classList.contains("valid")) &&
                             password2Validation.match.classList.contains("valid") &&
                             usernameValidationMessage.textContent === "" &&
@@ -276,14 +272,8 @@
             } else {
                 errorMessage.style.display = "none";
             }
-        };
-    
-        // Obsługa zdarzeń dla dynamicznej walidacji
-        password1.addEventListener("input", validatePassword1);
-        password2.addEventListener("input", validatePassword2);
-        usernameInput.addEventListener("input", validateUsername);
-        phoneInput.addEventListener("input", validatePhoneNumber);
-        document.getElementById("registrationForm").addEventListener("submit", validateForm);
+        });
     </script>
+
 </body>
 </html>
